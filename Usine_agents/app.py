@@ -1,13 +1,24 @@
 import streamlit as st
 import os
 from crew_logic import UsineOda
+import base64
 
-# --- 1. URLs DES IMAGES OFFICIELLES (À COMPLÉTER AVEC VOS LIENS D'HÉBERGEMENT) ---
-URL_FOND_GLOBAL = "images/akechi.jpeg"
-URL_NOBUNAGA = "https://votre-stockage.com"  # Image 4
-URL_HIDEYOSHI = "https://votre-stockage.com"  # Image 1
-URL_SHIBATA = "https://votre-stockage.com"  # Image 2
-URL_AKECHI = "https://votre-stockage.com"  # Image 3
+# --- FONCTION MAGIQUE DE CONVERSION BASE64 (ÉLIMINE LES BUGS D'URL) ---
+def extraire_image_locale(chemin_relatif):
+    chemin_absolu = os.path.join(os.path.dirname(__file__), chemin_relatif)
+    if os.path.exists(chemin_absolu):
+        with open(chemin_absolu, "rb") as fichier_image:
+            encodage = base64.b64encode(fichier_image.read()).decode()
+            return f"data:image/jpeg;base64,{encodage}"
+    # Image de secours si le fichier est introuvable
+    return "https://unsplash.com"
+
+# --- CONVERSION DES COMPOSANTS EN BASE64 ---
+FOND_GLOBAL = extraire_image_locale("images/a.jpg")
+IMG_NOBUNAGA = extraire_image_locale("images/nobunaga.jpeg")
+IMG_HIDEYOSHI = extraire_image_locale("images/hideyoshi.jpeg")
+IMG_SHIBATA = extraire_image_locale("images/shibata.jpeg")
+IMG_AKECHI = extraire_image_locale("images/akechi.jpeg")
 
 st.set_page_config(page_title="Le Clan d'IA Oda", layout="wide")
 
@@ -15,31 +26,27 @@ st.set_page_config(page_title="Le Clan d'IA Oda", layout="wide")
 css_style = f"""
 <style>
     .stApp {{
-        background-image: linear-gradient(rgba(10, 15, 30, 0.92), rgba(5, 5, 15, 0.98)), url({URL_FOND_GLOBAL});
+        background-image: linear-gradient(rgba(10, 15, 30, 0.92), rgba(5, 5, 15, 0.98)), url('{FOND_GLOBAL}');
         background-size: cover;
         background-attachment: fixed;
         font-family: 'Cinzel', 'Georgia', serif;
         color: #f0f4f8;
     }}
-
     .epic-title {{
         text-align: center;
         font-size: 3.5rem;
         font-weight: 900;
-        color: #f39c12; /* Or Impérial */
+        color: #f39c12;
         text-shadow: 0px 0px 20px rgba(243, 156, 18, 0.6), 3px 3px 0px #000000;
         letter-spacing: 5px;
         margin-top: -30px;
     }}
-
-    /* 👑 CARTE GOLD TIER (Nobunaga Oda) */
     .gold-tier-card {{
-        background: linear-gradient(135deg, rgba(40, 30, 10, 0.85) 0%, rgba(20, 15, 5, 0.95) 100%), url('{URL_NOBUNAGA}');
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: right center;
-        background-blend-mode: overlay;
-        border: 3px solid #f39c12;
+        /* Le dégradé protège le texte à gauche (foncé) et s'efface totalement à droite (transparent) */
+        background: linear-gradient(to right, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.9) 25%, rgba(15, 23, 42, 0) 40%), url('{IMG_NOBUNAGA}');
+        background-size: cover;
+        background-position: center right; /* Aligne l'illustration de Nobunaga vers la droite */
+        border: 3px solid #f39c12; /* Bordure OR EasyTech */
         border-radius: 12px;
         padding: 35px;
         box-shadow: 0px 0px 30px rgba(243, 156, 18, 0.4);
@@ -48,18 +55,15 @@ css_style = f"""
         margin: 0 auto 40px auto;
     }}
     .gold-tier-card:hover {{
-        transform: translateY(-5px);
+         transform: translateY(-5px);
         box-shadow: 0px 0px 45px rgba(243, 156, 18, 0.7);
         border-color: #f1c40f;
     }}
-
-    /* 🛡️ CARTES PURPLE TIER (Généraux) */
+    /* 🛡️ CARTES PURPLE TIER (Généraux - Version Éclatante) */
     .purple-tier-card {{
         background-size: cover;
         background-position: center top;
-        background-repeat: no-repeat;
-        background-blend-mode: overlay;
-        border: 2px solid #8e44ad;
+        border: 2px solid #8e44ad; /* Bordure VIOLETTE EasyTech */
         border-radius: 10px;
         padding: 25px 15px;
         text-align: center;
@@ -72,10 +76,20 @@ css_style = f"""
         box-shadow: 0px 0px 35px rgba(155, 89, 182, 0.7);
         border-color: #9b59b6;
     }}
-
-    .hideyoshi-bg {{ background-image: linear-gradient(135deg, rgba(35, 15, 50, 0.88) 0%, rgba(15, 5, 25, 0.95) 100%), url('{URL_HIDEYOSHI}'); }}
-    .shibata-bg   {{ background-image: linear-gradient(135deg, rgba(35, 15, 50, 0.88) 0%, rgba(15, 5, 25, 0.95) 100%), url('{URL_SHIBATA}'); }}
-    .akechi-bg    {{ background-image: linear-gradient(135deg, rgba(35, 15, 50, 0.88) 0%, rgba(15, 5, 25, 0.95) 100%), url('{URL_AKECHI}'); }}
+    
+    /* 
+       L'astuce EasyTech : transparent en haut (0%) pour laisser les visages et armures 100% éclatants, 
+       et fondu violet/sombre en bas (100%) uniquement sous le texte pour garder une lisibilité maximale.
+    */
+    .hideyoshi-bg {{ 
+        background-image: linear-gradient(to bottom, rgba(15, 5, 25, 0) 0%, rgba(15, 5, 25, 0) 70%, rgba(35, 15, 50, 0.98) 100%), url('{IMG_HIDEYOSHI}'); 
+    }}
+    .shibata-bg   {{ 
+        background-image: linear-gradient(to bottom, rgba(15, 5, 25, 0) 0%, rgba(15, 5, 25, 0) 70%, rgba(35, 15, 50, 0.98) 100%), url('{IMG_SHIBATA}'); 
+    }}
+    .akechi-bg    {{ 
+        background-image: linear-gradient(to bottom, rgba(15, 5, 25, 0) 0%, rgba(15, 5, 25, 0) 70%, rgba(35, 15, 50, 0.98) 100%), url('{IMG_AKECHI}'); 
+    }}
 
     .tier-label-gold {{ font-size: 0.8rem; letter-spacing: 2px; color: #f1c40f; font-weight: bold; }}
     .tier-label-purple {{ font-size: 0.8rem; letter-spacing: 2px; color: #bb8fce; font-weight: bold; }}
